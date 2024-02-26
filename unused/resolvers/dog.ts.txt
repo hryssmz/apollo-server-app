@@ -1,0 +1,40 @@
+// resolvers/dog.ts
+import axios from "axios";
+import lodash from "lodash";
+import { uid } from "../utils/suid";
+import type { DogResolvers, QueryResolvers } from "../graphql";
+
+const api = axios.create({ baseURL: "https://dog.ceo/api" });
+
+const createDog = (subbreeds: string[], breed: string) => ({
+  breed,
+  id: uid.rnd(),
+  subbreeds: subbreeds.length > 0 ? subbreeds : null,
+});
+
+export const dogs: QueryResolvers["dogs"] = async () => {
+  const { data } = await api.get("/breeds/list/all");
+  const dogs = lodash.map(data.message, createDog);
+  return dogs;
+};
+
+export const dog: QueryResolvers["dog"] = async (_parent, { breed }) => {
+  const { data } = await api.get(`/breed/${breed}/list`);
+  const dog = createDog(data.message, breed);
+  return dog;
+};
+
+export const displayImage: DogResolvers["displayImage"] = async ({ breed }) => {
+  const { data } = await api.get(`/breed/${breed}/images/random`);
+  const image = data.message;
+  return image;
+};
+
+export const images: DogResolvers["images"] = async ({ breed }) => {
+  const { data } = await api.get(`/breed/${breed}/images`);
+  const images = data.message.map((image: string) => ({
+    url: image,
+    id: uid.rnd(),
+  }));
+  return images;
+};

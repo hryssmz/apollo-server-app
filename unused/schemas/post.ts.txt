@@ -1,0 +1,25 @@
+// schemas/post.ts
+export const types = `#graphql
+  type Post {
+    id: String!
+    title: String!
+    content: String!
+  }
+`;
+
+export const queries = `#graphql
+  type Query {
+  }
+`;
+
+export const mutations = `#graphql
+  type Mutation {
+    createPost(title: String!, content: String): Post!
+  }
+`;
+
+export const subscriptions = `#graphql
+  type Subscription {
+    postCreated: Post!
+  }
+`;

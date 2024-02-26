@@ -1,0 +1,37 @@
+// resolvers/todo.ts
+import { LRUCache } from "lru-cache";
+import { uid } from "../utils/suid";
+import type { MutationResolvers, QueryResolvers, Todo } from "../graphql";
+
+const cache = new LRUCache<string, string>({ max: 50, ttl: 1000 * 60 * 60 });
+
+export const todos: QueryResolvers["todos"] = async () => {
+  const todos: Todo[] = [];
+  cache.forEach((type, id) => todos.push({ type, id }));
+  return todos;
+};
+
+export const todo: QueryResolvers["todo"] = async (_parent, { id }) => {
+  const type = cache.get(id);
+  const todo = type ? { id, type } : null;
+  return todo;
+};
+
+export const addTodo: MutationResolvers["addTodo"] = async (
+  _parent,
+  { type }
+) => {
+  const id = uid.rnd();
+  const todo = { type, id };
+  cache.set(id, type);
+  return todo;
+};
+
+export const updateTodo: MutationResolvers["updateTodo"] = async (
+  _parent,
+  { type, id }
+) => {
+  const todo = { type, id };
+  cache.set(id, type);
+  return todo;
+};

@@ -1,0 +1,21 @@
+// schemas/todo.ts
+export const types = `#graphql
+  type Todo {
+    id: String!
+    type: String!
+  }
+`;
+
+export const queries = `#graphql
+  type Query {
+    todos: [Todo]
+    todo(id: String!): Todo
+  }
+`;
+
+export const mutations = `#graphql
+  type Mutation {
+    addTodo(type: String!): Todo
+    updateTodo(id: String!, type: String!): Todo
+  }
+`;

@@ -1,0 +1,27 @@
+// schemas/dog.ts
+export const types = `#graphql
+  type Dog @cacheControl(maxAge: 1000) {
+    id: String!
+    breed: String!
+    displayImage: String
+    images: [Image]
+    subbreeds: [String]
+  }
+
+  type Image @cacheControl(maxAge: 1000) {
+    url: String!
+    id: String!
+  }
+`;
+
+export const queries = `#graphql
+  type Query {
+    dogs: [Dog]
+    dog(breed: String!): Dog
+  }
+`;
+
+export const mutations = `#graphql
+  type Mutation {
+  }
+`;

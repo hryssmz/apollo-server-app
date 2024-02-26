@@ -1,0 +1,132 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model BankAccount {
+  id            String   @id
+  uuid          String   @unique @default(uuid())
+  userId        String
+  bankName      String
+  accountNumber String
+  routingNumber String
+  isDeleted     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  modifiedAt    DateTime @default(now()) @updatedAt
+  user          User     @relation("bankAccounts", fields: [userId], references: [id])
+}
+
+model BankTransfer {
+  id            String      @id
+  uuid          String      @unique @default(uuid())
+  userId        String
+  source        String
+  amount        Int
+  type          String
+  transactionId String
+  createdAt     DateTime    @default(now())
+  modifiedAt    DateTime    @default(now()) @updatedAt
+  user          User        @relation("bankTransfers", fields: [userId], references: [id])
+  transaction   Transaction @relation("bankTransfers", fields: [transactionId], references: [id])
+}
+
+model Comment {
+  id            String      @id
+  uuid          String      @unique @default(uuid())
+  content       String
+  userId        String
+  transactionId String
+  createdAt     DateTime    @default(now())
+  modifiedAt    DateTime    @default(now()) @updatedAt
+  user          User        @relation("comments", fields: [userId], references: [id])
+  transaction   Transaction @relation("comments", fields: [transactionId], references: [id])
+}
+
+model Contact {
+  id            String   @id
+  uuid          String   @unique @default(uuid())
+  userId        String
+  contactUserId String
+  createdAt     DateTime @default(now())
+  modifiedAt    DateTime @default(now()) @updatedAt
+  user          User     @relation("contacts", fields: [userId], references: [id])
+  contactUser   User     @relation("contactsOf", fields: [contactUserId], references: [id])
+}
+
+model Like {
+  id            String      @id
+  uuid          String      @unique @default(uuid())
+  userId        String
+  transactionId String
+  createdAt     DateTime    @default(now())
+  modifiedAt    DateTime    @default(now()) @updatedAt
+  user          User        @relation("likes", fields: [userId], references: [id])
+  transaction   Transaction @relation("likes", fields: [transactionId], references: [id])
+}
+
+model Notification {
+  id            String      @id
+  uuid          String      @unique @default(uuid())
+  userId        String
+  transactionId String
+  message       String
+  isRead        Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  modifiedAt    DateTime    @default(now()) @updatedAt
+  user          User        @relation("notifications", fields: [userId], references: [id])
+  transaction   Transaction @relation("notifications", fields: [transactionId], references: [id])
+}
+
+model Transaction {
+  id                  String         @id
+  uuid                String         @unique @default(uuid())
+  source              String
+  amount              Int
+  description         String
+  privacyLevel        String
+  receiverId          String
+  senderId            String
+  balanceAtCompletion Int
+  status              String
+  requestStatus       String
+  requestResolvedAt   DateTime?
+  createdAt           DateTime       @default(now())
+  modifiedAt          DateTime       @default(now()) @updatedAt
+  sender              User           @relation("transactionsSent", fields: [senderId], references: [id])
+  receiver            User           @relation("transactionsReceived", fields: [receiverId], references: [id])
+  bankTransfers       BankTransfer[] @relation("bankTransfers")
+  comments            Comment[]      @relation("comments")
+  likes               Like[]         @relation("likes")
+  notifications       Notification[] @relation("notifications")
+}
+
+model User {
+  id                   String         @id
+  uuid                 String         @unique @default(uuid())
+  firstName            String
+  lastName             String
+  username             String         @unique
+  password             String
+  email                String?        @unique
+  phoneNumber          String?        @unique
+  balance              Int            @default(0)
+  avatar               String?
+  defaultPrivacyLevel  String
+  createdAt            DateTime       @default(now())
+  modifiedAt           DateTime       @default(now()) @updatedAt
+  bankAccounts         BankAccount[]  @relation("bankAccounts")
+  bankTransfers        BankTransfer[] @relation("bankTransfers")
+  comments             Comment[]      @relation("comments")
+  contacts             Contact[]      @relation("contacts")
+  contactsOf           Contact[]      @relation("contactsOf")
+  likes                Like[]         @relation("likes")
+  notifications        Notification[] @relation("notifications")
+  transactionsSent     Transaction[]  @relation("transactionsSent")
+  transactionsReceived Transaction[]  @relation("transactionsReceived")
+}

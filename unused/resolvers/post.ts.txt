@@ -1,0 +1,28 @@
+// resolvers/post.ts
+import { pubsub } from "../utils/pubsub";
+import { uid } from "../utils/suid";
+import type {
+  MutationResolvers,
+  Post,
+  SubscriptionResolvers,
+} from "../graphql";
+
+export const createPost: MutationResolvers["createPost"] = async (
+  _parent,
+  { title, content }
+) => {
+  const post: Post = {
+    id: uid.rnd(),
+    title,
+    content: content ?? "",
+  };
+  pubsub.publish("POST_CREATED", { postCreated: post });
+  return post;
+};
+
+export const postCreated: SubscriptionResolvers["postCreated"] = {
+  subscribe: () => ({
+    [Symbol.asyncIterator]: () =>
+      pubsub.asyncIterator<{ postCreated: Post }>(["POST_CREATED"]),
+  }),
+};
